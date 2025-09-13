@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Fira_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 
 const robotoSans = Roboto({
@@ -7,9 +7,10 @@ const robotoSans = Roboto({
   subsets: ["latin"],
 });
 
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
+const firaMono = Fira_Mono({
+  variable: "--font-fira-mono",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
+        className={`${robotoSans.variable} ${firaMono.variable} antialiased`}
       >
         {children}
       </body>
