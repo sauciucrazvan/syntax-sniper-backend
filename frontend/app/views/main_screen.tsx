@@ -1,5 +1,9 @@
+import { Spinner } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Crown, HeartIcon, Star } from "lucide-react";
 
 export default function MainScreen() {
   const [loading, setLoading] = useState(false);
@@ -69,53 +73,76 @@ export default function MainScreen() {
   };
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div className="pt-4">Error: {error}</div>;
   }
 
   if (loading || data === null) {
-    return <div>Loading...</div>;
+    return (
+      <div className="pt-4">
+        <Spinner />
+      </div>
+    );
   }
 
   if (lives <= 0) {
     return (
       <section className="pt-4 max-w-[60%] min-w-[60%] flex flex-col gap-4 items-center">
-        <div className="--font-fira-mono font-mono text-md">
-          Game Over! Your final score: {score}
+        <div className="text-lg font-bold --font-roboto-condensed bg-gradient-to-br from-red-500 to-red-700 bg-clip-text text-transparent">
+          GAME OVER!
         </div>
 
-        <button
+        <p className="text-md text-foreground/80 text-center">
+          Your final score: <b>{score} points</b>
+          {score === bestScore && " (new best score!)"}
+          <br />
+          {score < 0
+            ? "Better luck next time!"
+            : score >= 10
+            ? "Well played my man!"
+            : "You're decent, but you can do better!"}
+        </p>
+
+        <Button
           onClick={() => {
             setScore(0);
             setLives(3);
             setData(null);
           }}
-          className="p-2 rounded-md bg-blue-500 hover:bg-blue-700"
+          className="rounded cursor-pointer bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
         >
           Play Again
-        </button>
+        </Button>
       </section>
     );
   }
 
   return (
     <section className="pt-4 max-w-[60%] flex flex-col gap-4 items-center">
-      <div className="--font-fira-mono font-mono text-md">
-        Your score: {score} | Best score: {bestScore} | Lives left: {lives}
+      <div className="text-md flex flex-row items-center gap-4">
+        <Badge variant="secondary" className="rounded bg-blue-500">
+          <Star /> Your score: {score}
+        </Badge>
+        <Badge variant="default" className="rounded bg-amber-300">
+          <Crown /> Best score: {bestScore}
+        </Badge>
+        {[...Array(lives)].map((_, index) => (
+          <HeartIcon key={index} className="text-red-500" />
+        ))}
       </div>
 
-      <pre className="w-full p-2 overflow-x-auto">
+      <pre className="w-full p-2 overflow-x-auto bg-foreground/5 border border-foreground/10 rounded text-sm font-mono">
         <code>{data.code}</code>
       </pre>
 
       <div className="flex flex-row gap-1">
         {data.options.map((option: string) => (
-          <button
+          <Button
             key={option}
             onClick={() => handleGuess(option)}
-            className="p-2 rounded-md bg-blue-500 hover:bg-blue-700 flex-grow"
+            className="mt-4 rounded cursor-pointer bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
           >
             {option}
-          </button>
+          </Button>
         ))}
       </div>
     </section>
