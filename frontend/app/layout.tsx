@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fira_Mono, Roboto } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const robotoSans = Roboto({
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${robotoSans.variable} ${firaMono.variable} antialiased`}
       >
+        <Toaster position={"bottom-right"} />
         {children}
       </body>
     </html>

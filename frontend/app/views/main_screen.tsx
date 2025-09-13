@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function MainScreen() {
   const [loading, setLoading] = useState(false);
@@ -53,9 +54,17 @@ export default function MainScreen() {
         localStorage.setItem("bestScore", (score + 1).toString());
         setBestScore(score + 1);
       }
+
+      toast.success("Correct! (+1p)", {
+        description: `You guessed ${data!.language.toLocaleUpperCase()} correctly!`,
+      });
     } else {
       setScore(score - 1);
       setLives(lives - 1);
+
+      toast.warning("Wrong answer (-1p)", {
+        description: `The correct answer was ${data!.language.toLocaleUpperCase()}`,
+      });
     }
   };
 
@@ -94,7 +103,9 @@ export default function MainScreen() {
         Your score: {score} | Best score: {bestScore} | Lives left: {lives}
       </div>
 
-      <code className="w-full p-2">{data.code}</code>
+      <pre className="w-full p-2 overflow-x-auto">
+        <code>{data.code}</code>
+      </pre>
 
       <div className="flex flex-row gap-1">
         {data.options.map((option: string) => (
