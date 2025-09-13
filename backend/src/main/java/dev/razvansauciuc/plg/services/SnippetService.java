@@ -15,6 +15,7 @@ import static dev.razvansauciuc.plg.utils.SnippetUtils.getRandomSnippet;
 
 @Service
 public class SnippetService {
+    private static final List<String> EXCLUDED_EXTENSIONS = List.of(".md", ".yml", ".yaml", ".json");
 
     private final GitHubClient githubClient;
 
@@ -60,13 +61,20 @@ public class SnippetService {
         for (int i = 0; i < fileNodes.size(); i++) {
             JsonNode candidate = fileNodes.get(new Random().nextInt(fileNodes.size()));
             downloadUrl = candidate.path("download_url").asText(null);
+
             if (downloadUrl != null) {
+                boolean isExcluded = EXCLUDED_EXTENSIONS.stream().anyMatch(downloadUrl::endsWith);
+                if (isExcluded) {
+                    continue;
+                }
+
                 if (githubClient.codeCache.containsKey(downloadUrl)) {
                     code = githubClient.codeCache.get(downloadUrl);
                 } else {
                     code = githubClient.getText(downloadUrl);
                     githubClient.codeCache.put(downloadUrl, code);
                 }
+
                 codeFile = candidate;
                 break;
             }

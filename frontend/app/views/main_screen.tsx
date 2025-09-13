@@ -5,6 +5,7 @@ export default function MainScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const [score, setScore] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [data, setData] = useState<{
     code: string;
@@ -15,6 +16,11 @@ export default function MainScreen() {
   useEffect(() => {
     const fetchSnippet = async () => {
       try {
+        setBestScore(
+          localStorage.getItem("bestScore")
+            ? parseInt(localStorage.getItem("bestScore")!)
+            : 0
+        );
         setLoading(true);
         setError(null);
         const response = await fetch(`http://localhost:8080/`, {
@@ -43,6 +49,10 @@ export default function MainScreen() {
   const handleGuess = (option: string) => {
     if (option === data!.language) {
       setScore(score + 1);
+      if (score + 1 > bestScore) {
+        localStorage.setItem("bestScore", (score + 1).toString());
+        setBestScore(score + 1);
+      }
     } else {
       setScore(score - 1);
       setLives(lives - 1);
@@ -81,7 +91,7 @@ export default function MainScreen() {
   return (
     <section className="pt-4 max-w-[60%] flex flex-col gap-4 items-center">
       <div className="--font-fira-mono font-mono text-md">
-        Your score: {score} | Best score: -1 | Lives left: {lives}
+        Your score: {score} | Best score: {bestScore} | Lives left: {lives}
       </div>
 
       <code className="w-full p-2">{data.code}</code>
