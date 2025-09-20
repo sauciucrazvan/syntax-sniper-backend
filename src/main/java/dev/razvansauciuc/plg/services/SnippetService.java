@@ -46,45 +46,49 @@ public class SnippetService {
             throw new IllegalStateException("No programming languages found in the repository.");
         }
 
-        List<JsonNode> fileNodes = new ArrayList<>();
         String chosenPath = null;
-
-        while (fileNodes.isEmpty()) {
-            chosenPath = githubClient.cachedLanguagePaths.get(new Random().nextInt(githubClient.cachedLanguagePaths.size()));
-            fileNodes = githubClient.getAllFilesCached(chosenPath);
-        }
-
+        List<JsonNode> fileNodes = new ArrayList<>();
+        String code = null;
         JsonNode codeFile = null;
         String downloadUrl = null;
-        String code = null;
 
-        for (int i = 0; i < fileNodes.size(); i++) {
-            JsonNode candidate = fileNodes.get(new Random().nextInt(fileNodes.size()));
-            downloadUrl = candidate.path("download_url").asText(null);
+        // Keep trying until we get a valid code snippet
+        while (code == null) {
+            // Pick a random language path
+            chosenPath = githubClient.cachedLanguagePaths.get(new Random().nextInt(githubClient.cachedLanguagePaths.size()));
+            fileNodes = githubClient.getAllFilesCached(chosenPath);
 
-            if (downloadUrl != null) {
-                boolean isExcluded = EXCLUDED_EXTENSIONS.stream().anyMatch(downloadUrl::endsWith);
-                if (isExcluded) {
+            if (fileNodes.isEmpty()) continue;
+
+            // Try random files until we find a valid one
+            for (int i = 0; i < fileNodes.size(); i++) {
+                JsonNode candidate = fileNodes.get(new Random().nextInt(fileNodes.size()));
+                downloadUrl = candidate.path("download_url").asText(null);
+
+                if (downloadUrl == null || EXCLUDED_EXTENSIONS.stream().anyMatch(downloadUrl::endsWith)) {
                     continue;
                 }
 
                 if (githubClient.codeCache.containsKey(downloadUrl)) {
                     code = githubClient.codeCache.get(downloadUrl);
                 } else {
-                    code = githubClient.getText(downloadUrl);
-                    githubClient.codeCache.put(downloadUrl, code);
+                    try {
+                        code = githubClient.getText(downloadUrl);
+                        githubClient.codeCache.put(downloadUrl, code);
+                    } catch (Exception e) {
+                        System.err.println("Failed to fetch code from: " + downloadUrl);
+                        code = null;
+                    }
                 }
 
-                codeFile = candidate;
-                break;
+                if (code != null) {
+                    codeFile = candidate;
+                    break;
+                }
             }
         }
 
-        if (code == null) {
-            throw new IllegalStateException("No downloadable file found for selected language.");
-        }
-
-        String snippet = getRandomSnippet(code, new Random().nextInt(25 - 5 + 1) + 5);
+        String snippet = getRandomSnippet(code, new Random().nextInt(21) + 5);
 
         List<String> options = new ArrayList<>();
         for (String path : githubClient.cachedLanguagePaths) {
